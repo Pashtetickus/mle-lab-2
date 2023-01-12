@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDS=credentials('jenkins-homework')
+        LC_ALL = "en_US.UTF-8"
+        LANG    = "en_US.UTF-8"
+        LANGUAGE = "en_US.UTF-8"
+    }
+
+options {
+        timestamps()
+        skipDefaultCheckout(true)
+	}
+    stages {
+
+        stage('Login'){
+            steps{
+                bat 'docker login -u %DOCKERHUB_CREDS_USR% -p %DOCKERHUB_CREDS_PSW%'
+                }
+            }
+
+        stage('Pull image'){
+            steps{
+                bat '''
+                        docker pull pashtetick/mle-lab-2:latest
+                '''
+            }
+        }
+
+        stage('Run container'){
+            steps{
+                bat encoding: 'UTF-8', script: '''
+                        docker run --name mle-lab-2 -d pashtetick/mle-lab-2:latest
+                '''
+            }
+        }
+	}
+
+    post {
+        always {
+            bat 'docker stop mle-lab-2 && docker logout'
+        }
+    }
+}

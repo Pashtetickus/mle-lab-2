@@ -1,9 +1,7 @@
 import numpy as np
 import os
 import sys
-import gc
 import shutil
-from datetime import datetime
 from io import BytesIO
 
 os.environ['PYSPARK_PYTHON'] = sys.executable
@@ -12,10 +10,8 @@ os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 import pyspark
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
-from pyspark import SparkContext, SparkConf
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer
-from pyspark.sql.types import StringType, ArrayType, IntegerType
+from pyspark import SparkConf
+from pyspark.ml.feature import HashingTF, IDF
 from pyspark.mllib.linalg.distributed import IndexedRow, IndexedRowMatrix
 from pyspark.mllib.linalg import Vectors
 
@@ -46,7 +42,7 @@ spark = SparkSession.builder.getOrCreate()
 
 
 class RecommederSystem:
-    def __init__(self, data_dir='ml-20mx16x32/', data_target_dir='train', mode='train'):
+    def __init__(self, data_dir='data/', data_target_dir='train', mode='train'):
         self.data_dir = data_dir
         self.data_target_dir = data_target_dir
         os.makedirs(self.data_target_dir, exist_ok=True)
@@ -105,6 +101,7 @@ class RecommederSystem:
         recommended_movies = []
         target_user_movies = self.dataset.filter(self.dataset.user_id == target_user_id).select("movie_id").rdd
         target_user_movies = target_user_movies.collect()[0].movie_id
+        recommended_movies.extend(target_user_movies)
         while len(recommended_movies) < number_of_reccomendations and len(self.sim_users_ids) != 0:
             next_most_similar_user_id = self.sim_users_ids.pop(0)
             new_movies = self.get_movies_by_user(next_most_similar_user_id, recommended_movies)
@@ -113,7 +110,7 @@ class RecommederSystem:
         return recommended_movies
 
 
-recsystem = RecommederSystem(data_dir='ml-20mx16x32/', data_target_dir='train', mode='train')
+recsystem = RecommederSystem(data_dir='data/', data_target_dir='train', mode='train')
 
 user_id = recsystem.sample_random_user()
 print('Id случайного пользователя:', user_id)

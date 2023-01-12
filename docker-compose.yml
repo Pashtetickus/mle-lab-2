@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    container_name: lab_2
+    volumes:
+      - ./data:/app/data
+    command: bash -c "ls -la && /opt/spark/bin/spark-submit Spark_lab_2.py"
+    ports:
+      - 8000:8000
+    environment:
+      PYTHONUNBUFFERED: 1
+    image: pashtetick/mle-lab-2:latest
+
+volumes:
+  data:
